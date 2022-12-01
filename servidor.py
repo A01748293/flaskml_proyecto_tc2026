@@ -1,19 +1,24 @@
 from flask import Flask, request, jsonify, render_template
 import numpy as np
-from joblib import load
+from joblib import load, dump
 from werkzeug.utils import secure_filename
 import os
+from os import path
+import json
+import requests
+
+#Extracción de datos
+import pandas as pd
+#Biblioteca de manejo de vectores y matrices
+import numpy as np
+#Biblioteca para exportar procesos de machine learning
 
 #Cargar el modelo
+# if (path.exists('modelo.joblib')):
 dt = load('modelo.joblib')
 
 #Generar el servidor (Back-end)
 servidorWeb = Flask(__name__)
-
-
-@servidorWeb.route("/formulario",methods=['GET'])
-def formulario():
-    return render_template('pagina.html')
 
 #Envio de datos a través de Archivos
 @servidorWeb.route('/modeloFile', methods=['POST'])
@@ -44,7 +49,7 @@ def modeloFile():
     return jsonify({"Resultado":str(resultado[0])})
 
 #Envio de datos a través de Forms
-@servidorWeb.route('/modeloForm', methods=['POST'])
+@servidorWeb.route('/modeloFormDiabetes', methods=['POST'])
 def modeloForm():
     #Procesar datos de entrada 
     contenido = request.form
@@ -66,7 +71,7 @@ def modeloForm():
 
 
 #Envio de datos a través de JSON
-@servidorWeb.route('/modelo', methods=['POST'])
+@servidorWeb.route('/modeloDiabetes', methods=['POST'])
 def modelo():
     #Procesar datos de entrada 
     contenido = request.json
@@ -87,5 +92,34 @@ def modelo():
     #Regresar la salida del modelo
     return jsonify({"Resultado":str(resultado[0])})
 
+
+@servidorWeb.route('/trainDiabetes', methods=['POST'])
+def trainModel():
+    dataFrame = pd.DataFrame(requests.get('http://54.89.251.107:8083/diabetes/readRecords').json())
+    dataFrame.drop('id',axis=1,inplace=True)
+
+    #Caracteristicas de entrada (Info de los campos del formulario)
+    X=dataFrame.drop('class',axis=1)
+    #Caracteristicas de salida (Info de los campos del formulario)
+    y=dataFrame['class']
+    
+    from sklearn.model_selection import train_test_split
+    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2)
+    #Modelo
+    from sklearn.tree import DecisionTreeClassifier
+    dt=DecisionTreeClassifier()
+    #Entrenar el modelo
+    dt.fit(X_train,y_train)
+    
+    #Evaluación 
+    print("Exactitud del modelo", dt.score(X_test,y_test))
+    #exportar el modelo creado para usarlo en un servidor web con flask
+    dump(dt,'modelo.joblib') #64 bits
+    
+    return jsonify({"Resultado":dt.score(X_test,y_test)})
+
+
+    
+    
 if __name__ == '__main__':
     servidorWeb.run(debug=False,host='0.0.0.0',port='8080')
