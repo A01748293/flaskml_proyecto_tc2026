@@ -3,6 +3,12 @@ import numpy as np
 from joblib import load
 from werkzeug.utils import secure_filename
 import os
+#Extracción de datos
+import pandas as pd
+#Biblioteca de manejo de vectores y matrices
+import numpy as np
+#Biblioteca para exportar procesos de machine learning
+from joblib import load, dump
 
 #Cargar el modelo
 dt = load('modelo.joblib')
@@ -86,6 +92,31 @@ def modelo():
     resultado=dt.predict(datosEntrada.reshape(1,-1))
     #Regresar la salida del modelo
     return jsonify({"Resultado":str(resultado[0])})
+
+
+@servidorWeb.route('/retrainModel', methods=['GET'])
+def retrainModel():
+    # Obtener todos los registros de la base de datos
+
+    #Aqui se reentrena el modelo
+    contenido = request.json
+    print(contenido)
+    datosEntrada = np.array([
+        contenido['pregnancies'],
+        contenido['glucose'],
+        contenido['bloodPressure'],
+        contenido['skinThickness'],
+        contenido['insulin'],
+        contenido['BMI'],
+        contenido['DPF'],
+        contenido['age']
+    ])
+
+    # Utilizar el modelo
+    resultado = dt.predict(datosEntrada.reshape(1, -1))
+    # Regresar la salida del modelo
+    return jsonify({"Resultado": str(resultado[0])})
+
 
 if __name__ == '__main__':
     servidorWeb.run(debug=False,host='0.0.0.0',port='8080')
