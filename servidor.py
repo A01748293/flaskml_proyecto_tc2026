@@ -6,7 +6,7 @@ import os
 from os import path
 import json
 import requests
-
+from flask_cors import CORS, cross_origin
 #Extracción de datos
 import pandas as pd
 #Biblioteca de manejo de vectores y matrices
@@ -19,7 +19,7 @@ dt = load('modelo.joblib')
 
 #Generar el servidor (Back-end)
 servidorWeb = Flask(__name__)
-
+CORS(servidorWeb)
 #Envio de datos a través de Archivos
 @servidorWeb.route('/modeloFile', methods=['POST'])
 def modeloFile():
