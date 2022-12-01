@@ -93,9 +93,9 @@ def modelo():
     return jsonify({"Resultado":str(resultado[0])})
 
 
-@servidorWeb.route('/trainDiabetes', methods=['POST'])
+@servidorWeb.route('/trainDiabetes', methods=['GET'])
 def trainModel():
-    dataFrame = pd.DataFrame(requests.get('http://54.89.251.107:8083/diabetes/readRecords').json())
+    dataFrame = pd.DataFrame(requests.get('http://3.80.126.199:8083/diabetes/readRecords').json())
     print(dataFrame.head())
     dataFrame.drop('id',axis=1,inplace=True)
     print(dataFrame.head())
