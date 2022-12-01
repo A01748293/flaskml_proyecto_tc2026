@@ -96,8 +96,9 @@ def modelo():
 @servidorWeb.route('/trainDiabetes', methods=['POST'])
 def trainModel():
     dataFrame = pd.DataFrame(requests.get('http://54.89.251.107:8083/diabetes/readRecords').json())
+    print(dataFrame.head())
     dataFrame.drop('id',axis=1,inplace=True)
-
+    print(dataFrame.head())
     #Caracteristicas de entrada (Info de los campos del formulario)
     X=dataFrame.drop('class',axis=1)
     #Caracteristicas de salida (Info de los campos del formulario)
@@ -108,6 +109,7 @@ def trainModel():
     #Modelo
     from sklearn.tree import DecisionTreeClassifier
     dt=DecisionTreeClassifier()
+    print("llegue aqui")
     #Entrenar el modelo
     dt.fit(X_train,y_train)
     
